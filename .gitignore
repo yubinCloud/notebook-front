@@ -1,0 +1,23 @@
+node_modules
+
+# npm
+package-lock.json
+node_modules
+
+# yarn
+yarn.lock
+
+# vscode
+.vscode
+
+# vuepress
+.vuepress/.temp
+.vuepress/.cache
+.vuepress/dist
+
+# mac
+.DS_Store
+
+.idea/
+
+__pycache__/
