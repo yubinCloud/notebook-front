@@ -3,6 +3,7 @@ import type { DefaultThemeOptions } from 'vuepress'
 
 export default defineUserConfig<DefaultThemeOptions>({
   title: 'notebook of front-end',
+  lang: 'zh-CN',
   description: 'Just playing around',
   theme: 'reco',
   base: '/notebook-front/',
