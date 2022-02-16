@@ -14,9 +14,10 @@ bannerBrand:
     borderRadius: '1rem'
   bgImage: '/images/bg.svg'
   heroText: notebook of front-end
-  tagline: 前端的升级打怪之路
+  tagline: 学习笔记的前端部分
   buttons:
     - { text: Start, link: '/docs/base/HTML 基础.html' }
+    - { text: 回到笔记主站, link: 'https://yubincloud.github.io/notebook/', type: plain}
 isShowTitleInHome: true
 actionText: About
 actionLink: /views/other/about
