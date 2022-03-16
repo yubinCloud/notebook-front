@@ -1,5 +1,6 @@
 ---
 title: HTML 基础
+permalink: /base/html-base
 date: 2020/05/29
 ---
 

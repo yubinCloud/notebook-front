@@ -20,10 +20,20 @@ export default defineUserConfig<DefaultThemeOptions>({
     lastUpdatedText: '',
     // series 为原 sidebar
     series: {
-      '/docs/base/': [
+      '/base/': [
         {
           text: 'HTML',
-          children: ['HTML 基础.html']
+          children: ['html-base']
+        },
+        {
+          text: 'JavaScript',
+          children: ['es6-modeule-and-async']
+        },
+      ],
+      '/docs/library/vue': [
+        {
+          text: 'Vue',
+          children: ['vue-core']
         }
       ]
     },
@@ -33,7 +43,14 @@ export default defineUserConfig<DefaultThemeOptions>({
       {
         text: '前端基础',
         children: [
-          { text: 'HTML', link: '/docs/base/HTML 基础.html' }
+          { text: 'HTML', link: '/base/html-base' },
+          { text: 'JavaScript', link: '/base/es6-modeule-and-async'},
+        ],
+      },
+      {
+        text: '库与框架',
+        children: [
+          { text: 'Vue', link: '/docs/library/vue/vue-core' },
         ]
       },
     ],
