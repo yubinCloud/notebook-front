@@ -23,11 +23,11 @@ export default defineUserConfig<DefaultThemeOptions>({
       '/base/': [
         {
           text: 'HTML',
-          children: ['html-base']
+          children: ['/base/html-base']
         },
         {
           text: 'JavaScript',
-          children: ['es6-modeule-and-async']
+          children: ['/base/es6-modeule-and-async']
         },
       ],
       '/docs/library/vue': [
