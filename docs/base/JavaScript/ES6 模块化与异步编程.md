@@ -107,3 +107,4 @@ console.log(s1)
 import './something.js'
 ```
 
+Yes
