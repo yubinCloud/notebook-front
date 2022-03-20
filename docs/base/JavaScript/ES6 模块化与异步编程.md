@@ -163,7 +163,7 @@ thenFs.readFile('./files/3.txt', 'utf8').then((r3) => {console.log(r3)})
 
 Promise 支持链式调用，从而来解决回调地狱的问题。示例代码如下：
 
-```javascript {5,9,13}
+```javascript
 import thenFs from 'then-fs'
 
 thenFs
@@ -185,7 +185,7 @@ thenFs
 
 在 Promise 的链式操作中如果发生了错误，可以使用 `Promise.prototype.catch` 方法进行捕获和处理：
 
-```javascript {5}
+```javascript
 import thenFs from 'then-fs'
 
 thenFs
@@ -212,7 +212,7 @@ thenFs
 
 `Promise.all()` 方法会发起并行的 Promise 异步操作，**等所有的异步操作全部结束后**才会执行下一步的 .then  操作（等待机制）。
 
-```javascript
+```javascript {4}
 import thenFs from 'then-fs'
 
 const promiseArr = [
