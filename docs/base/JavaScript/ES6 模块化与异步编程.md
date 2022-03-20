@@ -309,4 +309,114 @@ getFile('./files/11.txt')
 
 ## 3. async / await
 
+async/await 是 ES8（ECMAScript 2017）引入的新语法，用来**简化 Promise 异步操作**。
+
+> `.then` 链式调用解决了回调地狱的问题，但也有代码冗余、阅读性差、 不易理解的缺点。
+
+使用 async/await 简化 Promise 异步操作的示例代码如下：
+
+```javascript
+import thenFs from 'then-fs'
+
+async function getAllFile() {
+  console.log('B')
+  const r1 = await thenFs.readFile('./files/1.txt', 'utf8')
+  console.log(r1)
+  const r2 = await thenFs.readFile('./files/2.txt', 'utf8')
+  console.log(r2)
+  const r3 = await thenFs.readFile('./files/3.txt', 'utf8')
+  console.log(r3)
+}
+```
+
+使用**注意事项**：
+
++ 如果在 function 中使用了 await，则 function **必须**被 async 修饰
++ 在 async 方法中，**第一个 await 之前的代码会同步执行**，await **之后的代码会异步执行**，参考该示例：
+
+```javascript
+import thenFs from 'then-fs'
+
+console.log('A')
+
+async function getAllFile() {
+  console.log('B')
+  const r1 = await thenFs.readFile('./files/1.txt', 'utf8')
+  const r2 = await thenFs.readFile('./files/2.txt', 'utf8')
+  const r3 = await thenFs.readFile('./files/3.txt', 'utf8')
+  console.log(r1, r2, r3)
+  console.log('D')
+}
+
+getAllFile()
+console.log('C')
+```
+
+执行结果为：
+
+```
+A
+B
+C
+111 222 333
+D
+```
+
+原因是首先执行 `console.log('A')`，然后调用 `getAllFile()`，该函数在第一个 await 之前是同步执行，因此执行 `console.log('B')` ，而后后面的代码需要异步执行，因此主线程退出该函数的执行，先去执行 `console.log('C')`，当异步操作执行完毕后，便继续执行了剩下的两个打印操作。
+
+## 4. EventLoop
+
+### 4.1 同步任务与异步任务
+
+JavaScript 是一门单线程执行的编程语言。也就是说，同一时间只能做一件事情。
+
+![image-20220320163659215](https://notebook-img-1304596351.cos.ap-beijing.myqcloud.com/img/image-20220320163659215.png)
+
+单线程执行任务队列的问题： 如果前一个任务非常耗时，则后续的任务就不得不一直等待，从而导致**程序假死的问题**。
+
+为了防止某个耗时任务导致程序假死的问题，JavaScript 把待执行的任务分为了两类：
+
+1. 同步任务（synchronous）
+   + 又叫做非耗时任务，指的是在主线程上排队执行的那些任务
+   + 只有前一个任务执行完毕，才能执行后一个任务
+2. 异步任务（asynchronous）
+   + 又叫做耗时任务，异步任务由 JavaScript **委托给宿主环境**进行执行
+   + 当异步任务执行完成后，会通知 JavaScript 主线程执行异步任务的回调函数
+
+### 4.2 同步任务和异步任务的执行过程
+
+<img src="https://notebook-img-1304596351.cos.ap-beijing.myqcloud.com/img/image-20220320164328594.png" alt="image-20220320164328594" style="zoom:80%;" />
+
+1. 同步任务由 JavaScript 主线程次序执行
+2. 异步任务**委托给**宿主环境执行
+3. 已完成的异步任务**对应的回调函数**，会被**加入到任务队列中**等待执行
+4. JavaScript 主线程的**执行栈被清空后**，会读取任务队列中的回调函数，次序执行
+5. JavaScript 主线程不断重复上面的第 4 步
+
+### 4.3 EventLoop 基本概念
+
+JavaScript 主线程**从“任务队列”中读取**异步任务的回调函数，**放到执行栈中**依次执行。这 个过程是循环不断的，所以整个的这种运行机制又称为 **EventLoop**（事件循环）。
+
+结合 EventLoop 分析输出的顺序：
+
+```javascript
+import thenFs from 'then-fs'
+
+console.log('A')
+thenFs.readFile('./files/1.txt', 'utf8').then(dataStr => {
+    console.log('B')
+})
+setTimeout(() => {
+    console.log('C')
+}, 0)
+console.log('D')
+```
+
+正确结果：ADCB，原因：
+
++ A 和 D 属于同步任务，会根据代码的先后顺序依次被执行
++ C 和 B 属于异步任务。它们的回调函数会被加入到任务队列中，等待主线程空闲时再执行
+
+## 5. 宏任务和微任务
+
 // TODO
