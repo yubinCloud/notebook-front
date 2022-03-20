@@ -133,6 +133,180 @@ import './something.js'
 
 + `p.then(成功的回调函数，失败的回调函数)`
 + ` p.then(result => { }, error => { })`
-+ 调用 .then() 方法时，成功的回调函数是必选的、失败的回调函数是可选的
++ 调用 .then() 方法时，<u>成功的回调函数是必选的</u>、失败的回调函数是可选的
 
-### 2.2 基于回调函数按顺序读取文件内容
+### 2.2 读取文件示例
+
+#### 2.2.1 then-fs 的基本使用
+
+由于 node.js 官方提供的 fs 模块仅支持以回调函数的方式读取文件，不支持 Promise 的调用方式。因此，需要先运行如下的命令，安装 **then-fs** 这个第三方包，从而支持我们基于 Promise 的方式读取文件的内容：
+
+```sh
+npm install then-fs
+```
+
+调用 then-fs 提供的 `readFile()` 方法，可以异步地读取文件的内容，它的返回值是 Promise 的实例对象。因此可以调用 `.then()` 方法为每个 Promise 异步操作指定成功和失败之后的回调函数。示例代码如下：
+
+```js
+import thenFs from 'then-fs'  // 从第三方库中导入 thenFs
+
+thenFs.readFile('./files/1.txt', 'utf8').then((r1) => {console.log(r1)})
+thenFs.readFile('./files/2.txt', 'utf8').then((r2) => {console.log(r2)})
+thenFs.readFile('./files/3.txt', 'utf8').then((r3) => {console.log(r3)})
+```
+
+注意，**上述的代码无法保证文件的读取顺序**，需要做进一步的改进！
+
+#### 2.2.2 基于 Promise 按顺序读取文件的内容
+
+**.then 方法的特性**：如果上一个 .then() 方法中**返回了一个新的 Promise 实例**对象，则可以通过下一个 .then() 继续进行处理。通过 .then() 方法的**链式调用**，就解决了回调地狱的问题。
+
+Promise 支持链式调用，从而来解决回调地狱的问题。示例代码如下：
+
+```javascript {5,9,13}
+import thenFs from 'then-fs'
+
+thenFs
+  .readFile('./files/11.txt', 'utf8')
+  .then((r1) => {
+    console.log(r1)
+    return thenFs.readFile('./files/2.txt', 'utf8')
+  })
+  .then((r2) => {
+    console.log(r2)
+    return thenFs.readFile('./files/3.txt', 'utf8')
+  })
+  .then((r3) => {
+    console.log(r3)
+  })
+```
+
+#### 2.2.3 通过 .catch 捕获错误
+
+在 Promise 的链式操作中如果发生了错误，可以使用 `Promise.prototype.catch` 方法进行捕获和处理：
+
+```javascript {5}
+import thenFs from 'then-fs'
+
+thenFs
+  .readFile('./files/1.txt', 'utf8')
+  .catch((err) => {
+    console.log(err.message)
+  })
+  .then((r1) => {
+    console.log(r1)
+    return thenFs.readFile('./files/2.txt', 'utf8')
+  })
+  .then((r2) => {
+    console.log(r2)
+    return thenFs.readFile('./files/3.txt', 'utf8')
+  })
+  .then((r3) => {
+    console.log(r3)
+  })
+```
+
++ 当读取 `1.txt` 发生失败后，错误会被 `.catch` 捕获并处理，之后再调用后面的 `then` 方法
+
+### 2.3 `Promise.all()` 方法
+
+`Promise.all()` 方法会发起并行的 Promise 异步操作，**等所有的异步操作全部结束后**才会执行下一步的 .then  操作（等待机制）。
+
+```javascript
+import thenFs from 'then-fs'
+
+const promiseArr = [
+  thenFs.readFile('./files/3.txt', 'utf8'),
+  thenFs.readFile('./files/2.txt', 'utf8'),
+  thenFs.readFile('./files/1.txt', 'utf8'),
+]
+
+Promise.all(promiseArr).then(result => {
+    console.log(result)
+})
+```
+
++ 注意：数组中 Promise 实例的顺序，就是最终结果的顺序！
+
+### 2.4 `Promise.race()` 方法
+
+`Promise.race()` 方法会发起并行的 Promise 异步操作，**只要任何一个异步操作完成，就立即执行下一步的 .then 操作**（赛跑机制）。示例代码如下：
+
+```javascript
+import thenFs from 'then-fs'
+
+const promiseArr = [
+  thenFs.readFile('./files/3.txt', 'utf8'),
+  thenFs.readFile('./files/2.txt', 'utf8'),
+  thenFs.readFile('./files/1.txt', 'utf8'),
+]
+
+Promise.race(promiseArr).then(result => {
+  console.log(result)
+})
+```
+
+### 2.5 基于 Promise 封装读文件的方法
+
+方法的封装要求：
+
+1. 方法的名称要定义为 `getFile`
+2. 方法接收一个**形参 fpath**，表示要读取的文件的路径
+3. 方法的**返回值**为 Promise 实例对象
+
+其基本定义如下：
+
+```javascript
+function getFile(fpath) {
+    return new Promise();  // 方法的返回值为 Promise 的实例对象
+}
+```
+
++ `new Promise()` 只是创建了一个形式上的异步操作。
+
+#### 2.5.1 创建具体的异步操作
+
+如果想要创建具体的异步操作，则需要在 `new Promise()` 构造函数期间，**传递一个 function 函数，将具体的异步操作定义到 function 函数内部**。示例代码如下：
+
+```javascript
+import fs from 'fs'
+
+function getFile(fpath) {
+  return new Promise(function () {
+    fs.readFile(fpath, 'utf8', (err, dataStr) => { })
+  })
+}
+```
+
+#### 2.5.2 获取 .then 的两个实参
+
+通过 `.then()` 指定的成功和失败的回调函数，可以在 function 的**形参中**进行接收，示例代码如下：
+
+![image-20220320143725613](https://notebook-img-1304596351.cos.ap-beijing.myqcloud.com/img/image-20220320143725613.png)
+
+Promise 异步操作的结果，可以调用 resolve 或 reject 回调函数进行处理。示例代码如下：
+
+```javascript
+function getFile(fpath) {
+  return new Promise(function (resolve, reject) {
+    fs.readFile(fpath, 'utf8', (err, dataStr) => {
+      if (err) return reject(err)
+      resolve(dataStr)
+    })
+  })
+}
+```
+
+至此，我们的封装完成了，现在我们测试一下：
+
+```javascript
+getFile('./files/11.txt')
+  .then((r1) => {
+    console.log(r1)
+  })
+  .catch((err) => console.log(err.message))
+```
+
+## 3. async / await
+
+// TODO
