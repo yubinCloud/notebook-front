@@ -419,4 +419,48 @@ console.log('D')
 
 ## 5. 宏任务和微任务
 
-// TODO
+JavaScript 把异步任务又做了进一步的划分，异步任务又分为两类：
+
+1. **宏任务**（macrotask）
+   + 异步 Ajax 请求
+   + setTimeout、setInterval
+   + 文件操作
+   + 其它宏任务
+2. **微任务**（microtask）
+   + Promise.then、.catch 和 .finally
+   + process.nextTick
+   + 其它微任务
+
+宏任务和微任务的**执行顺序**：每一个宏任务执行完之后，都会检查是否存在待执行的微任务，如果有，则执行完所有微任务之后，再继续执行下一个宏任务。
+
+::: tip 面试题
+
+分析以下代码输出的顺序：
+
+```javascript
+setTimeout(function () {
+    console.log('1')
+})
+
+new Promise(function (resolve) {
+    console.log('2')
+    resolve()
+}).then(function () {
+    console.log('3')
+})
+
+console.log('4')
+```
+
+正确输出顺序：2431
+
+分析：
+
++ 先执行所有的同步任务：第 6 和 12 行
++ 再执行微任务：第 9 行
++ 再执行下一个宏任务：第 2 行
+
+:::
+
+
+
